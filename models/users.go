@@ -2,7 +2,7 @@ package users
 
 import (
 	"gopkg.in/mgo.v2/bson"
-	"github.com/philippecarle/auth/db"
+	"github.com/philippecarle/go-user-api/db"
 )
 
 const (

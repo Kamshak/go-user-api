@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/auth/db"
+	"github.com/philippecarle/go-user-api/db"
 )
 
 // Connect middleware clones the database session for each request and

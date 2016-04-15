@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"github.com/philippecarle/auth/models"
-	"github.com/philippecarle/auth/encryption"
-	"github.com/philippecarle/auth/jwt"
+	"github.com/philippecarle/go-user-api/models"
+	"github.com/philippecarle/go-user-api/encryption"
+	"github.com/philippecarle/go-user-api/jwt"
 )
 
 // Binding from JSON

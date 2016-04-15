@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/auth/db"
-	"github.com/philippecarle/auth/handlers/registration"
-	"github.com/philippecarle/auth/handlers/login"
-	"github.com/philippecarle/auth/middlewares"
+	"github.com/philippecarle/go-user-api/db"
+	"github.com/philippecarle/go-user-api/handlers/registration"
+	"github.com/philippecarle/go-user-api/handlers/login"
+	"github.com/philippecarle/go-user-api/middlewares"
 	"os"
 )
 

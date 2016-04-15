@@ -3,8 +3,8 @@ package registration
 import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/auth/encryption"
-	"github.com/philippecarle/auth/models"
+	"github.com/philippecarle/go-user-api/encryption"
+	"github.com/philippecarle/go-user-api/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"

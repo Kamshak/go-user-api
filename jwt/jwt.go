@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"time"
-	"github.com/philippecarle/auth/models"
+	"github.com/philippecarle/go-user-api/models"
 )
 
 // JWT
