@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	PW_SALT_BYTES = 32
-	PW_HASH_BYTES = 64
+	PW_SALT_BYTES = 512
+	PW_HASH_BYTES = 1024
 )
 
+// Encrypt a password string
 func EncryptPassword(password string) ([]byte, []byte) {
 	salt := make([]byte, PW_SALT_BYTES)
 
@@ -28,6 +29,7 @@ func EncryptPassword(password string) ([]byte, []byte) {
 	return salt, hash
 }
 
+// Check if password is valid
 func IsPasswordValid(password string, salt string, hash string) (bool, error) {
 	goodHash, err := getHash([]byte(password), []byte(salt))
 
@@ -40,6 +42,7 @@ func IsPasswordValid(password string, salt string, hash string) (bool, error) {
 	return isValid, nil
 }
 
+// Hash password
 func getHash(password []byte, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, 1<<14, 8, 1, PW_HASH_BYTES)
 }

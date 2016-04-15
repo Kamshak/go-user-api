@@ -1,11 +1,12 @@
 package main
 
 import (
-	"os"
 	"github.com/gin-gonic/gin"
 	"github.com/philippecarle/auth/db"
+	"github.com/philippecarle/auth/handlers/registration"
+	"github.com/philippecarle/auth/handlers/login"
 	"github.com/philippecarle/auth/middlewares"
-	"github.com/philippecarle/auth/handlers/users"
+	"os"
 )
 
 const (
@@ -23,9 +24,9 @@ func main() {
 
 	router.Use(middlewares.Connect)
 
-	router.POST("/register", users.Register)
-	router.POST("/login", users.Login)
-	router.GET("/me", users.Me)
+	router.POST("/register", registration.Register)
+	router.POST("/login", login.Login)
+	//router.GET("/me", users.Me)
 
 	// Start listening
 	port := Port

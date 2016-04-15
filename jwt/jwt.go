@@ -1,13 +1,19 @@
-package authjwt
+package jwt
 
 import (
 	"crypto/rsa"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/philippecarle/auth/models"
 	"io/ioutil"
 	"log"
 	"time"
+	"github.com/philippecarle/auth/models"
 )
+
+// JWT
+type JWT struct {
+	Token   string    `json:"token"`
+	Expires time.Time `json:"expires"`
+}
 
 // location of the files used for signing and verification
 const (
@@ -45,7 +51,7 @@ func fatal(err error) {
 	}
 }
 
-func GenerateJWT(user models.User) models.JWT {
+func GenerateJWT(user users.User) JWT {
 	// Create the token
 	token := jwt.New(jwt.SigningMethodRS256)
 	// Set some claims
@@ -59,7 +65,7 @@ func GenerateJWT(user models.User) models.JWT {
 		log.Fatal(err)
 	}
 
-	tokenObj := models.JWT{tokenString, expires}
+	tokenObj := JWT{tokenString, expires}
 
 	return tokenObj
 }
