@@ -1,12 +1,16 @@
 package main
 
 import (
+	"github.com/appleboy/gin-jwt"
+	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/philippecarle/go-user-api/db"
-	"github.com/philippecarle/go-user-api/handlers/registration"
 	"github.com/philippecarle/go-user-api/handlers/login"
 	"github.com/philippecarle/go-user-api/middlewares"
 	"os"
+	"time"
+	"github.com/philippecarle/go-user-api/handlers/user"
+	"github.com/philippecarle/go-user-api/handlers/registration"
 )
 
 const (
@@ -20,13 +24,12 @@ func init() {
 }
 
 func main() {
-	router := gin.Default()
+	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	r.Use(middlewares.Connect)
 
-	router.Use(middlewares.Connect)
-
-	router.POST("/register", registration.Register)
-	router.POST("/login", login.Login)
-	//router.GET("/me", users.Me)
+	gin.SetMode(gin.DebugMode)
 
 	// Start listening
 	port := Port
@@ -34,5 +37,43 @@ func main() {
 		port = os.Getenv("PORT")
 	}
 
-	router.Run(":" + port)
+	// the jwt middleware
+	authMiddleware := &jwt.GinJWTMiddleware{
+		Realm:   "User API",
+		Key:     []byte("54xDEBGEMtnNZJGpPahYzdd47nuQ8M64QpXeDyLnGAH3Gq3HQwnbRG625z9pvNAgSrgp5vTrpC7u2bcqfDs23WX93tefUf8dp7aqxyQVZFzzKhsGtmHgA29r"),
+		Timeout: time.Hour * 72,
+		Authenticator: login.LoginHandler,
+		//Authorizator: specificAuth,
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+	}
+
+	r.POST("/login", authMiddleware.LoginHandler)
+
+	auth := r.Group("/users")
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/me", user.MeHandler)
+	}
+
+	admin := r.Group("/admin")
+	admin.Use(authMiddleware.MiddlewareFunc())
+	{
+		users := admin.Group("/users")
+		users.GET("/:username", user.ByUserNameHandler)
+		users.POST("", registration.RegisterHandler)
+		users.GET("", user.AllHandler)
+	}
+
+	token := r.Group("/token")
+	token.Use(authMiddleware.MiddlewareFunc())
+	{
+		token.GET("/refresh", authMiddleware.RefreshHandler)
+	}
+
+	endless.ListenAndServe(":"+port, r)
 }

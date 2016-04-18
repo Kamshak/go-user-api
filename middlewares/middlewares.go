@@ -3,8 +3,6 @@
 package middlewares
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/philippecarle/go-user-api/db"
 )
@@ -18,15 +16,4 @@ func Connect(c *gin.Context) {
 
 	c.Set("db", s.DB(db.Mongo.Database))
 	c.Next()
-}
-
-// ErrorHandler is a middleware to handle errors encountered during requests
-func ErrorHandler(c *gin.Context) {
-	c.Next()
-
-	if len(c.Errors) > 0 {
-		c.HTML(http.StatusBadRequest, "400", gin.H{
-			"errors": c.Errors,
-		})
-	}
 }

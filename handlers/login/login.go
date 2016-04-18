@@ -1,45 +1,22 @@
 package login
 
 import (
-	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
 	"github.com/philippecarle/go-user-api/models"
 	"github.com/philippecarle/go-user-api/encryption"
-	"github.com/philippecarle/go-user-api/jwt"
 )
-
-// Binding from JSON
-type LoginForm struct {
-	Username string `form:"_username" binding:"required"`
-	Password string `form:"_password" binding:"required"`
-}
 
 
 // Validate Credentials and return a JWT
-func Login(c *gin.Context) {
+// http --json POST localhost:8888/login username=yeah@hi.tld password=myPa$$W0rd
+func LoginHandler(userName string, password string) (string, bool) {
 
-	var form LoginForm
+	u := users.GetUserByUserName(userName)
 
-	err := c.Bind(&form)
+	verification, _ := encryption.IsPasswordValid(password, string(u.Salt), string(u.Hash))
 
-	if err == nil {
-		u := users.GetUserByUserName(form.Username)
-
-		verification, err := encryption.IsPasswordValid(form.Password, string(u.Salt), string(u.Hash))
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if verification {
-			c.JSON(http.StatusOK, jwt.GenerateJWT(u))
-		} else {
-			c.JSON(http.StatusUnauthorized, []int{})
-		}
+	if verification {
+		return userName, true
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Fields username and password are mandatory",
-		})
+		return userName, false
 	}
 }

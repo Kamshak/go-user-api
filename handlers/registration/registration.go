@@ -8,36 +8,97 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"errors"
+	"log"
+	"unicode"
 )
 
+type RegisterForm struct {
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+	Roles []string  `form:"roles"`
+}
+
+var mustHave = []func(rune) bool{
+	unicode.IsUpper,
+	unicode.IsLower,
+	unicode.IsPunct,
+	unicode.IsDigit,
+}
+
 // Register a user
-func Register(c *gin.Context) {
+// http -f POST localhost:8888/admin/users "Authorization:Bearer XXXXXXXXXXXX" username=yeah@hi.tld password=myPa$$W0rd roles=ADMIN
+func RegisterHandler(c *gin.Context) {
 
 	db := c.MustGet("db").(*mgo.Database)
 
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+	var form RegisterForm
 
-	if !govalidator.IsEmail(username) {
+	err := c.Bind(&form)
+	if err != nil {
+		// TODO loop through errors and get missing fields names
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Username must be an email",
+			"message": "Some fields are missing",
 		})
 	} else {
-		salt, hash := encryption.EncryptPassword(password)
+		formErrors := validateForm(form)
 
-		u := users.GetUserByUserName(username)
-
-		if u.Username == username {
-			c.JSON(http.StatusConflict, gin.H{
-				"message": "Username already used",
+		if len(formErrors) > 0 {
+			e := make([]string, len(formErrors)-1)
+			for _, err := range formErrors {
+				e = append(e, err.Error())
+			}
+			log.Print(formErrors)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Some values are incorrect",
+				"errors": e,
 			})
 		} else {
-			user := users.User{bson.NewObjectId(), username, salt, hash}
+			salt, hash := encryption.EncryptPassword(form.Password)
 
-			db.C(users.UsersCollection).Insert(user)
+			u := users.GetUserByUserName(form.Username)
 
-			c.JSON(http.StatusCreated, user)
+			if u.Username == form.Username {
+				c.JSON(http.StatusConflict, gin.H{
+					"message": "Username already used",
+				})
+			} else {
+				user := users.User{bson.NewObjectId(), form.Username, salt, hash, nil}
+
+				db.C(users.UsersCollection).Insert(user)
+
+				c.JSON(http.StatusCreated, user)
+			}
 		}
 	}
+}
 
+func validateForm(f RegisterForm) []error {
+
+	var e []error
+
+	if !govalidator.IsEmail(f.Username) {
+		e = append(e, errors.New("Username must be an email"))
+	}
+
+	if !passwordOK(f.Password) {
+		e = append(e, errors.New("Password must contains uppercase and lowercase, special characters and digits"))
+	}
+
+	return e
+}
+
+func passwordOK(p string) bool {
+	for _, testRune := range mustHave {
+		found := false
+		for _, r := range p {
+			if testRune(r) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }

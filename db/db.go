@@ -34,7 +34,6 @@ func Connect() {
 		panic(err.Error())
 	}
 	s.SetSafe(&mgo.Safe{})
-	fmt.Println("Connected to", uri)
 	Session = s
 	Mongo = mongo
 }
