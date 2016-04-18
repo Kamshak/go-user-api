@@ -15,7 +15,7 @@ type User struct {
 	Username string        `json:"username" bson:"username"`
 	Salt     []byte        `json:"-" bson:"salt"`
 	Hash     []byte        `json:"-" bson:"hash"`
-	Roles    []string        `json:"roles" bson:"roles"`
+	Roles    []string      `json:"roles" bson:"roles"`
 }
 
 // Get a single User by Username

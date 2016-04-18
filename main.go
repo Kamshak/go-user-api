@@ -44,7 +44,6 @@ func main() {
 		Timeout:       time.Hour * 72,
 		Authenticator: login.LoginHandler,
 		Authorizator: func(userId string, c *gin.Context) bool {
-			// Find a way to get current Group
 			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
@@ -64,15 +63,12 @@ func main() {
 	}
 
 	admin := r.Group("/admin")
-	admin.Use(Test)
+	admin.Use(authMiddleware.MiddlewareFunc())
 	{
-		admin.Use(authMiddleware.MiddlewareFunc())
-		{
-			users := admin.Group("/users")
-			users.GET("/:username", user.ByUsernameHandler)
-			users.POST("", registration.RegisterHandler)
-			users.GET("", user.AllUsersHandler)
-		}
+		users := admin.Group("/users")
+		users.GET("/:username", user.ByUsernameHandler)
+		users.POST("", registration.RegisterHandler)
+		users.GET("", user.AllUsersHandler)
 	}
 
 	token := r.Group("/token")
@@ -82,9 +78,4 @@ func main() {
 	}
 
 	endless.ListenAndServe(":"+port, r)
-}
-
-// MiddlewareFunc makes GinJWTMiddleware implement the Middleware interface.
-func Test(c *gin.Context) {
-	c.Set("Group", "admin")
 }
