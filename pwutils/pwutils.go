@@ -1,16 +1,25 @@
-package encryption
+package pwutils
 
 import (
 	"crypto/rand"
 	"golang.org/x/crypto/scrypt"
 	"io"
 	"log"
+	"unicode"
 )
 
 const (
 	PW_SALT_BYTES = 512
 	PW_HASH_BYTES = 1024
 )
+
+
+var mustHave = []func(rune) bool{
+	unicode.IsUpper,
+	unicode.IsLower,
+	unicode.IsPunct,
+	unicode.IsDigit,
+}
 
 // Encrypt a password string
 func EncryptPassword(password string) ([]byte, []byte) {
@@ -45,4 +54,19 @@ func IsPasswordValid(password string, salt string, hash string) (bool, error) {
 // Hash password
 func getHash(password []byte, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, 1<<14, 8, 1, PW_HASH_BYTES)
+}
+
+func CheckPasswordRequirements(p string) bool {
+	for _, testRune := range mustHave {
+		found := false
+		for _, r := range p {
+			if testRune(r) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }

@@ -2,7 +2,7 @@ package login
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/go-user-api/encryption"
+	"github.com/philippecarle/go-user-api/pwutils"
 	"github.com/philippecarle/go-user-api/models"
 )
 
@@ -12,7 +12,7 @@ func LoginHandler(username string, password string, c *gin.Context) (string, boo
 
 	u := users.GetUserByUserName(username)
 
-	verification, _ := encryption.IsPasswordValid(password, string(u.Salt), string(u.Hash))
+	verification, _ := pwutils.IsPasswordValid(password, string(u.Salt), string(u.Hash))
 
 	if verification {
 		return username, true

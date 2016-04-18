@@ -4,26 +4,19 @@ import (
 	"errors"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/go-user-api/encryption"
+	"github.com/philippecarle/go-user-api/pwutils"
 	"github.com/philippecarle/go-user-api/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/http"
-	"unicode"
+	"github.com/philippecarle/go-user-api/db"
 )
 
 type RegisterForm struct {
 	Username string   `form:"username" binding:"required"`
 	Password string   `form:"password" binding:"required"`
 	Roles    []string `form:"roles[]"`
-}
-
-var mustHave = []func(rune) bool{
-	unicode.IsUpper,
-	unicode.IsLower,
-	unicode.IsPunct,
-	unicode.IsDigit,
 }
 
 // Register a user
@@ -57,7 +50,7 @@ func RegisterHandler(c *gin.Context) {
 				"errors":  e,
 			})
 		} else {
-			salt, hash := encryption.EncryptPassword(form.Password)
+			salt, hash := pwutils.EncryptPassword(form.Password)
 
 			u := users.GetUserByUserName(form.Username)
 
@@ -77,6 +70,18 @@ func RegisterHandler(c *gin.Context) {
 	}
 }
 
+func ChangePasswordHandler(c *gin.Context) {
+	s := db.Session.Clone()
+	defer s.Close()
+
+	//payload, _ := c.Get("JWT_PAYLOAD")
+	//p, _ := payload.(map[string]interface{})
+
+	//s.DB(db.Mongo.Database).C(users.UsersCollection).UpdateAll(bson.M{"username": p["id"].(string)})
+
+
+}
+
 func validateForm(f RegisterForm) []error {
 
 	var e []error
@@ -85,24 +90,9 @@ func validateForm(f RegisterForm) []error {
 		e = append(e, errors.New("Username must be an email"))
 	}
 
-	if !passwordOK(f.Password) {
+	if !pwutils.CheckPasswordRequirements(f.Password) {
 		e = append(e, errors.New("Password must contains uppercase and lowercase, special characters and digits"))
 	}
 
 	return e
-}
-
-func passwordOK(p string) bool {
-	for _, testRune := range mustHave {
-		found := false
-		for _, r := range p {
-			if testRune(r) {
-				found = true
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }

@@ -60,6 +60,7 @@ func main() {
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/me", user.MeHandler)
+		auth.PATCH("/me/change-password", registration.ChangePasswordHandler)
 	}
 
 	admin := r.Group("/admin")
