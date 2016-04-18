@@ -1,22 +1,22 @@
 package registration
 
 import (
+	"errors"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/philippecarle/go-user-api/encryption"
 	"github.com/philippecarle/go-user-api/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"net/http"
-	"errors"
 	"log"
+	"net/http"
 	"unicode"
 )
 
 type RegisterForm struct {
-	Username string `form:"username" binding:"required"`
-	Password string `form:"password" binding:"required"`
-	Roles []string  `form:"roles"`
+	Username string   `form:"username" binding:"required"`
+	Password string   `form:"password" binding:"required"`
+	Roles    []string `form:"roles[]"`
 }
 
 var mustHave = []func(rune) bool{
@@ -35,6 +35,9 @@ func RegisterHandler(c *gin.Context) {
 	var form RegisterForm
 
 	err := c.Bind(&form)
+
+	log.Print(form)
+
 	if err != nil {
 		// TODO loop through errors and get missing fields names
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -51,7 +54,7 @@ func RegisterHandler(c *gin.Context) {
 			log.Print(formErrors)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Some values are incorrect",
-				"errors": e,
+				"errors":  e,
 			})
 		} else {
 			salt, hash := encryption.EncryptPassword(form.Password)
@@ -63,7 +66,8 @@ func RegisterHandler(c *gin.Context) {
 					"message": "Username already used",
 				})
 			} else {
-				user := users.User{bson.NewObjectId(), form.Username, salt, hash, nil}
+
+				user := users.User{bson.NewObjectId(), form.Username, salt, hash, form.Roles}
 
 				db.C(users.UsersCollection).Insert(user)
 

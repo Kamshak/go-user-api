@@ -1,8 +1,8 @@
 package users
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"github.com/philippecarle/go-user-api/db"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -15,16 +15,11 @@ type User struct {
 	Username string        `json:"username" bson:"username"`
 	Salt     []byte        `json:"-" bson:"salt"`
 	Hash     []byte        `json:"-" bson:"hash"`
-	Roles    []Role        `json:"roles" bson:"roles"`
-}
-
-// Role
-type Role struct  {
-	Role string
+	Roles    []string        `json:"roles" bson:"roles"`
 }
 
 // Get a single User by Username
-func GetUserByUserName(username string) (User) {
+func GetUserByUserName(username string) User {
 	s := db.Session.Clone()
 	defer s.Close()
 
@@ -35,7 +30,7 @@ func GetUserByUserName(username string) (User) {
 }
 
 // Find all users
-func FindAll() ([]User) {
+func FindAll() []User {
 	s := db.Session.Clone()
 	defer s.Close()
 

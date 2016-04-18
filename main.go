@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/philippecarle/go-user-api/db"
 	"github.com/philippecarle/go-user-api/handlers/login"
+	"github.com/philippecarle/go-user-api/handlers/registration"
+	"github.com/philippecarle/go-user-api/handlers/user"
 	"github.com/philippecarle/go-user-api/middlewares"
 	"os"
 	"time"
-	"github.com/philippecarle/go-user-api/handlers/user"
-	"github.com/philippecarle/go-user-api/handlers/registration"
 )
 
 const (
@@ -39,11 +39,14 @@ func main() {
 
 	// the jwt middleware
 	authMiddleware := &jwt.GinJWTMiddleware{
-		Realm:   "User API",
-		Key:     []byte("54xDEBGEMtnNZJGpPahYzdd47nuQ8M64QpXeDyLnGAH3Gq3HQwnbRG625z9pvNAgSrgp5vTrpC7u2bcqfDs23WX93tefUf8dp7aqxyQVZFzzKhsGtmHgA29r"),
-		Timeout: time.Hour * 72,
+		Realm:         "User API",
+		Key:           []byte("54xDEBGEMtnNZJGpPahYzdd47nuQ8M64QpXeDyLnGAH3Gq3HQwnbRG625z9pvNAgSrgp5vTrpC7u2bcqfDs23WX93tefUf8dp7aqxyQVZFzzKhsGtmHgA29r"),
+		Timeout:       time.Hour * 72,
 		Authenticator: login.LoginHandler,
-		//Authorizator: specificAuth,
+		Authorizator: func(userId string, c *gin.Context) bool {
+			// Find a way to get current Group
+			return true
+		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
 				"code":    code,
@@ -61,12 +64,15 @@ func main() {
 	}
 
 	admin := r.Group("/admin")
-	admin.Use(authMiddleware.MiddlewareFunc())
+	admin.Use(Test)
 	{
-		users := admin.Group("/users")
-		users.GET("/:username", user.ByUserNameHandler)
-		users.POST("", registration.RegisterHandler)
-		users.GET("", user.AllHandler)
+		admin.Use(authMiddleware.MiddlewareFunc())
+		{
+			users := admin.Group("/users")
+			users.GET("/:username", user.ByUsernameHandler)
+			users.POST("", registration.RegisterHandler)
+			users.GET("", user.AllUsersHandler)
+		}
 	}
 
 	token := r.Group("/token")
@@ -76,4 +82,9 @@ func main() {
 	}
 
 	endless.ListenAndServe(":"+port, r)
+}
+
+// MiddlewareFunc makes GinJWTMiddleware implement the Middleware interface.
+func Test(c *gin.Context) {
+	c.Set("Group", "admin")
 }

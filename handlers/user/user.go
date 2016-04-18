@@ -15,12 +15,12 @@ func MeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func ByUserNameHandler(c *gin.Context) {
+func ByUsernameHandler(c *gin.Context) {
 	id := c.Param("username")
 
 	var user users.User
 
-	if(id == "me") {
+	if id == "me" {
 		payload, _ := c.Get("JWT_PAYLOAD")
 		p, _ := payload.(map[string]interface{})
 		user = users.GetUserByUserName(p["id"].(string))
@@ -31,6 +31,6 @@ func ByUserNameHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func AllHandler(c *gin.Context) {
+func AllUsersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, users.FindAll())
 }
