@@ -77,7 +77,9 @@ func ChangePasswordHandler(c *gin.Context) {
 	//payload, _ := c.Get("JWT_PAYLOAD")
 	//p, _ := payload.(map[string]interface{})
 
-	//s.DB(db.Mongo.Database).C(users.UsersCollection).UpdateAll(bson.M{"username": p["id"].(string)})
+	//log.Print(c.Request.Body)
+
+	//s.DB(db.Mongo.Database).C(users.UsersCollection).Update(bson.M{"username": p["id"].(string)})
 
 
 }
