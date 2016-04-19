@@ -4,13 +4,13 @@ import (
 	"errors"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	"github.com/philippecarle/go-user-api/pwutils"
+	"github.com/philippecarle/go-user-api/db"
 	"github.com/philippecarle/go-user-api/models"
+	"github.com/philippecarle/go-user-api/password"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/http"
-	"github.com/philippecarle/go-user-api/db"
 )
 
 type RegisterForm struct {
@@ -18,6 +18,9 @@ type RegisterForm struct {
 	Password string   `form:"password" binding:"required"`
 	Roles    []string `form:"roles[]"`
 }
+
+const PASSWORD_REQUIREMENT = "Password must contains uppercase and lowercase, special characters and digits"
+const USERNAME_REQUIREMENT = "Username must be an email"
 
 // Register a user
 // http -f POST localhost:8888/admin/users "Authorization:Bearer XXXXXXXXXXXX" username=yeah@hi.tld password=myPa$$W0rd roles=ADMIN
@@ -50,7 +53,7 @@ func RegisterHandler(c *gin.Context) {
 				"errors":  e,
 			})
 		} else {
-			salt, hash := pwutils.EncryptPassword(form.Password)
+			salt, hash := password.EncryptPassword(form.Password)
 
 			u := users.GetUserByUserName(form.Username)
 
@@ -70,30 +73,49 @@ func RegisterHandler(c *gin.Context) {
 	}
 }
 
+// Change User password
 func ChangePasswordHandler(c *gin.Context) {
 	s := db.Session.Clone()
 	defer s.Close()
 
-	//payload, _ := c.Get("JWT_PAYLOAD")
-	//p, _ := payload.(map[string]interface{})
+	payload, _ := c.Get("JWT_PAYLOAD")
+	p, _ := payload.(map[string]interface{})
 
-	//log.Print(c.Request.Body)
+	user := users.GetUserByUserName(p["id"].(string))
 
-	//s.DB(db.Mongo.Database).C(users.UsersCollection).Update(bson.M{"username": p["id"].(string)})
+	current := c.Query("current_password")
+	new := c.Query("new_password")
 
+	valid, _ := password.IsPasswordValid(current, string(user.Salt), string(user.Hash))
 
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Current password is incorrect",
+		})
+	} else {
+		if password.CheckPasswordRequirements(new) {
+			user.Salt, user.Hash = password.EncryptPassword(new)
+			s.DB(db.Mongo.Database).C(users.UsersCollection).Update(bson.M{"username": p["id"].(string)}, user)
+			c.AbortWithStatus(http.StatusNoContent)
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": PASSWORD_REQUIREMENT,
+			})
+		}
+	}
 }
 
+// Validate register form
 func validateForm(f RegisterForm) []error {
 
 	var e []error
 
 	if !govalidator.IsEmail(f.Username) {
-		e = append(e, errors.New("Username must be an email"))
+		e = append(e, errors.New(USERNAME_REQUIREMENT))
 	}
 
-	if !pwutils.CheckPasswordRequirements(f.Password) {
-		e = append(e, errors.New("Password must contains uppercase and lowercase, special characters and digits"))
+	if !password.CheckPasswordRequirements(f.Password) {
+		e = append(e, errors.New(PASSWORD_REQUIREMENT))
 	}
 
 	return e

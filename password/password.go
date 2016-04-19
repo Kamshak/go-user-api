@@ -1,4 +1,4 @@
-package pwutils
+package password
 
 import (
 	"crypto/rand"
@@ -12,7 +12,6 @@ const (
 	PW_SALT_BYTES = 512
 	PW_HASH_BYTES = 1024
 )
-
 
 var mustHave = []func(rune) bool{
 	unicode.IsUpper,
