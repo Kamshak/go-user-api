@@ -6,10 +6,8 @@ import (
 	"github.com/philippecarle/go-user-api/db"
 	"github.com/philippecarle/go-user-api/middlewares"
 	"github.com/philippecarle/go-user-api/routing"
-	"github.com/itsjamie/gin-cors"
 	"os"
 	"runtime"
-	"time"
 )
 
 const (
@@ -45,13 +43,5 @@ func setMiddlewares(r *gin.Engine) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(middlewares.Connect)
-	r.Use(cors.Middleware(cors.Config{
-		Origins:        "*",
-		Methods:        "GET, PUT, PATH, POST, DELETE",
-		RequestHeaders: "Origin, Authorization, Content-Type",
-		ExposedHeaders: "",
-		MaxAge: 50 * time.Second,
-		Credentials: true,
-		ValidateHeaders: false,
-	}))
+	r.Use(middlewares.CORS())
 }

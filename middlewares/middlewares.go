@@ -8,6 +8,7 @@ import (
 	"github.com/philippecarle/go-user-api/db"
 	"github.com/philippecarle/go-user-api/handlers/login"
 	"time"
+	"github.com/itsjamie/gin-cors"
 )
 
 // Connect middleware clones the database session for each request and
@@ -23,7 +24,7 @@ func Connect(c *gin.Context) {
 
 // Returns the JWT Middleware
 func JWT() *jwt.GinJWTMiddleware {
-	authMiddleware := &jwt.GinJWTMiddleware{
+	return &jwt.GinJWTMiddleware{
 		Realm:         "User API",
 		Key:           []byte("54xDEBGEMtnNZJGpPahYzdd47nuQ8M64QpXeDyLnGAH3Gq3HQwnbRG625z9pvNAgSrgp5vTrpC7u2bcqfDs23WX93tefUf8dp7aqxyQVZFzzKhsGtmHgA29r"),
 		Timeout:       time.Hour * 72,
@@ -38,6 +39,16 @@ func JWT() *jwt.GinJWTMiddleware {
 			})
 		},
 	}
+}
 
-	return authMiddleware
+func CORS() *cors.Middleware {
+	return cors.Middleware(cors.Config{
+		Origins:        "*",
+		Methods:        "GET, PUT, PATH, POST, DELETE",
+		RequestHeaders: "Origin, Authorization, Content-Type",
+		ExposedHeaders: "",
+		MaxAge: 50 * time.Second,
+		Credentials: true,
+		ValidateHeaders: false,
+	})
 }
