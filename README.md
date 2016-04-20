@@ -8,7 +8,10 @@ This API is meant to be a personnal training on Golang.
 
 It's made to expose a CRUD for users management and to deliver JWT so that other REST APIs can check their authenticity.
 
-It has been coded with [Gin](github.com/gin-gonic/gin) and [Gin-JWT](github.com/appleboy/gin-jwt)
+It has been coded thanks to the work of these guys :  
+- [Gin](github.com/gin-gonic/gin),   
+- [Gin-JWT](github.com/appleboy/gin-jwt)  
+- [Gin-CORS](github.com/itsjamie/gin-cors)  
 
 ##Features
 
