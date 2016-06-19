@@ -1,35 +1,20 @@
-#Go User API
+micro-user-service
+==================
+The purpose of this project is to demonstrate the usage of flask for building small microservices rest-api's.
 
-[![codebeat badge](https://codebeat.co/badges/bfb98303-9fb5-4f15-808b-de9fd90c5641)](https://codebeat.co/projects/github-com-philippecarle-go-user-api)
+Used frameworks and batteries are:
+ - sqlalchemy and flask-sqlalchemy for persistence
+ - flask 
+ - flask-restless for rest
+ - flask-testing for unit testing
+ - behave for integration tests
+ - requests for integration tests
 
-##Introduction
 
-This API is meant to be a personnal training on Golang.
+## Code Status
 
-It's made to expose a CRUD for users management and to deliver JWT so that other REST APIs can check their authenticity.
+* [![Build Status](https://travis-ci.org/atdi/micro-user-service.svg?branch=master)](https://travis-ci.org/atdi/micro-user-service)
 
-It has been coded thanks to the work of these guys :  
-- [Gin](github.com/gin-gonic/gin),   
-- [Gin-JWT](github.com/appleboy/gin-jwt)  
-- [Gin-CORS](github.com/itsjamie/gin-cors)  
+## License
 
-##Features
-
-###Routing 
-
-**Login :**  
-POST   /login  
-
-**Refresh my token :**  
-GET    /token/refresh  
-
-**Get my informations :**  
-GET    /users/me  
-
-**Change my password :**  
-PATCH  /users/me/change-password  
-
-**Admin (get any user informations, get all users, create a user)**  
-GET    /admin/users/:username  
-POST   /admin/users  
-GET    /admin/users  
+Micro users service is released under [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0).
